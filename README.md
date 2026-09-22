@@ -1,8 +1,36 @@
 # Codex Workspace Backup
 
-Lightweight backup and restore tool for Codex projects, conversation assignments, and custom sidebar sections.
+Codex Desktop keeps projects, conversation assignments, and custom sidebar sections in local application state. After a crash, forced restart, power loss, or an interrupted update, that relationship data may no longer appear correctly in the sidebar. The conversations may still exist, but projects can disappear and previously organized conversations can be scattered back into the general task list. Rebuilding every project and moving every conversation by hand is slow and error-prone.
 
-## Portable layout
+**Codex Workspace Backup** is a lightweight Windows utility that creates small snapshots of this relationship metadata and restores it when the Codex sidebar loses its organization.
+
+> This is an unofficial local utility for Windows and is not affiliated with OpenAI.
+
+## What it protects
+
+- Project names, workspace roots, ordering, and ID mappings
+- Conversation-to-project assignments
+- Custom sidebar section definitions
+- Projects and conversations placed inside each section
+- Relevant sidebar ordering and display state
+
+## What it does not back up
+
+This is intentionally not a full Codex data backup. It does **not** copy:
+
+- Conversation bodies or session files
+- Images and attachments
+- Authentication credentials
+- Logs, plugins, models, or application binaries
+- `config.toml` or unrelated Codex settings
+
+Because only relationship metadata is saved, a typical backup is measured in kilobytes rather than hundreds of megabytes.
+
+## Download
+
+Download the latest `CodexWorkspaceBackup.zip` from the repository's [Releases](https://github.com/guanyiLiu-F/codex-workspace-backup/releases/latest) page, then extract it to a normal writable folder such as Desktop or Documents.
+
+The portable package contains:
 
 ```text
 CodexWorkspaceBackup/
@@ -11,32 +39,49 @@ CodexWorkspaceBackup/
 └─ CodexWorkspaceBackups/
 ```
 
-The release folder is portable. You can move it to another location or keep it on a USB drive. Backup files are stored beside the EXE in `CodexWorkspaceBackups`.
+The application is self-contained. End users do not need to install the .NET SDK.
 
-## Use the folder version
+## How to use
 
-- Run `Backup.cmd` at any time. Codex may remain open for a lightweight backup.
-- Run `Restore.cmd` only after completely quitting ChatGPT/Codex, including the system tray process.
-- Restore creates or reuses projects, restores conversation assignments, recreates native sections, moves projects and conversations into their sections, and writes the sidebar state.
+### Create a backup
 
-The PowerShell implementation is `codex-project-tool.ps1`.
+1. Run `CodexWorkspaceBackup.exe`.
+2. Select **立即备份**.
+3. Wait for the completion message.
+4. Keep the generated JSON and SHA-256 files in `CodexWorkspaceBackups`.
 
-## Use the EXE version
+Backup is designed to work while Codex is open. If the current Codex version refuses access to its local state, completely exit Codex and retry the backup.
 
-Double-click `CodexWorkspaceBackup.exe`. The product name and file names are English, while the main operation labels remain Chinese for convenience.
+### Restore projects and sidebar organization
 
-## Build a new EXE
+1. Completely exit ChatGPT/Codex, including its system tray process.
+2. Run `CodexWorkspaceBackup.exe`.
+3. Select **恢复备份**.
+4. Choose the required JSON snapshot from `CodexWorkspaceBackups`.
+5. Review the confirmation dialog and start the restore.
+6. Read the completion message and the generated `restore_report_*.txt` report.
 
-Run `Build.cmd`, or run `Build.ps1 -NoPause` from PowerShell. The script publishes a self-contained Windows x64 single-file EXE into `CodexWorkspaceBackup`.
+The restore process merges data instead of deleting existing conversations. It creates or reuses projects, restores conversation assignments, creates or reuses native sections, moves the recorded items back into their sections, and writes the corresponding sidebar state.
 
-The first build may download .NET 8 Windows runtime packs from NuGet. The end-user EXE does not require the .NET SDK.
+## Safety and verification
 
-## Backup contents and limits
+- A lightweight `before_restore_*.json` safety snapshot is created before changes are applied.
+- Existing conversations are not deleted by the restore operation.
+- Projects, assignments, and section relationships are verified separately.
+- Partial failures are written to `restore_report_*.txt` instead of being reported as a complete success.
+- The main Codex state file and its backup copy are both updated and checked.
 
-The lightweight backup contains project names, roots, ordering, ID mappings, conversation-to-project assignments, native section definitions, section membership, and sidebar state. It does not contain conversation bodies, attachments, logs, authentication data, plugins, or model configuration.
+## Important limitations
 
-Always create a new backup with this version before relying on section restoration. Older backups that do not contain `sidebar-custom-sections-v3` can restore projects and assignments but cannot reconstruct section membership that was never saved.
+- A backup must exist from before the metadata is lost. The tool cannot reconstruct relationships that were never recorded.
+- Older snapshots without `sidebar-custom-sections-v3` may restore projects and conversation assignments but cannot recreate missing section membership.
+- Codex is actively developed, so a future application update may change its local data format or app-server interface.
+- Keep more than one recent backup and verify the restore report after every recovery.
 
-## Verification
+## Requirements
 
-Restore creates a `restore_report_*.txt` file and verifies projects, conversation assignments, and section relationships separately. Existing projects and conversations are merged; the tool does not delete them.
+- Windows 10 or Windows 11, x64
+- Codex Desktop installed for the current Windows user
+- Write access to the portable tool directory
+
+All snapshots remain in the local `CodexWorkspaceBackups` folder. The utility does not upload backup files to an external service.
