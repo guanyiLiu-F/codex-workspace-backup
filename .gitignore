@@ -1,6 +1,0 @@
-CodexWorkspaceBackups/
-*.zip
-restore_report_*.txt
-before_restore_*.json
-project_map_*.json
-*.sha256
