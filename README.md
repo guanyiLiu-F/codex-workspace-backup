@@ -85,3 +85,7 @@ The restore process merges data instead of deleting existing conversations. It c
 - Write access to the portable tool directory
 
 All snapshots remain in the local `CodexWorkspaceBackups` folder. The utility does not upload backup files to an external service.
+
+## Acknowledgements
+
+This project was developed with assistance from OpenAI Codex using GPT-5.6 Sol.
